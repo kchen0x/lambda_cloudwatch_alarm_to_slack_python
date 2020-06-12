@@ -9,7 +9,7 @@ channel_name = '#xxx'
 
 def handle_cloudwatch(event, context):
     timestamp = event['Records'][0]['Sns']['Timestamp']
-    message = event['Records'][0]['Sns']['Message']
+    message = json.loads(event['Records'][0]['Sns']['Message'])
     region = event['Records'][0]['EventSubscriptionArn'].split(':')[3]
     subject = 'AWS CloudWatch Notification'
     alarmName = message['AlarmName']
