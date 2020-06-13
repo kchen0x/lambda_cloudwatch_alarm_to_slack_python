@@ -8,6 +8,7 @@ It provides:
 
 **Better default formatting for CloudWatch notifications**:
 
+![notification](./notification_1.png)
 
 **Support for both AWS global and AWS China**
 
