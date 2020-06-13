@@ -5,8 +5,9 @@ import json
 from datetime import datetime
 
 http = urllib3.PoolManager()
-url = 'https://hooks.slack.com/services/xxx'
-channel_name = '#xxx'
+slack_url = 'https://hooks.slack.com/services/xxx'
+slack_channel = '#xxx'
+aws_base_url = '.console.amazonaws.cn/cloudwatch/home?region='
 
 def handle_cloudwatch(event, context):
     ts_string = event['Records'][0]['Sns']['Timestamp']
@@ -28,9 +29,12 @@ def handle_cloudwatch(event, context):
         color = 'danger'
     elif (message['NewStateValue'] == 'OK'):
         color = 'good'
+
+    if ('cn-' in region):
+        aws_base_url = '.console.amazonaws.cn/cloudwatch/home?region='
     
     slack_message = {
-        'channel': channel_name,
+        'channel': slack_channel,
         'text': '*' + subject + '*',
         'attachments': [
         {
@@ -52,7 +56,7 @@ def handle_cloudwatch(event, context):
             { 'title': 'Current State', 'value': newState, 'short': True },
             {
                 'title': 'Link to Alarm',
-                'value': 'https://' + region + '.console.aws.amazon.com/cloudwatch/home?region=' + region + '#s=Alarms&alarm=' + alarmName,
+                'value': 'https://' + region + '.console.amazonaws.cn/cloudwatch/home?region=' + region + '#s=Alarms&alarm=' + alarmName,
                 'short': False
             }
             ],
@@ -65,7 +69,7 @@ def handle_cloudwatch(event, context):
 
 def post_message(message):
     body = json.dumps(message).encode('utf-8')
-    resp = http.request('POST', url, body=body)
+    resp = http.request('POST', slack_url, body=body)
     print({
         'status_code': resp.status, 
         'response': resp.data
