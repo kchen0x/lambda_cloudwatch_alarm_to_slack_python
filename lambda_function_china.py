@@ -2,13 +2,16 @@
 
 import urllib3
 import json
+from datetime import datetime
 
 http = urllib3.PoolManager()
 url = 'https://hooks.slack.com/services/xxx'
 channel_name = '#xxx'
 
 def handle_cloudwatch(event, context):
-    timestamp = event['Records'][0]['Sns']['Timestamp']
+    ts_string = event['Records'][0]['Sns']['Timestamp']
+    ts_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+    timestamp = datetime.strptime(ts_string, ts_format).timestamp()
     message = json.loads(event['Records'][0]['Sns']['Message'])
     region = event['Records'][0]['EventSubscriptionArn'].split(':')[3]
     subject = 'AWS CloudWatch Notification'
