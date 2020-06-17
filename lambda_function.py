@@ -36,7 +36,7 @@ def handle_cloudwatch(event, context):
         color = 'good'
     
     slack_message = {
-        'channel': slack_channel,
+        'channel': channel_name,
         'text': '[' + subject + '](', + alarm_link + ')'
         'attachments': [
         {
