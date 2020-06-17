@@ -7,7 +7,7 @@ from datetime import datetime
 http = urllib3.PoolManager()
 slack_url = 'https://hooks.slack.com/services/xxx'
 slack_channel = '#xxx'
-aws_base_url = '.console.amazonaws.cn/cloudwatch/home?region='
+aws_base_url = '.console.aws.amazon.com/cloudwatch/home?region='
 
 def handle_cloudwatch(event, context):
     ts_string = event['Records'][0]['Sns']['Timestamp']
@@ -25,17 +25,19 @@ def handle_cloudwatch(event, context):
     trigger = message['Trigger']
     color = 'warning'
 
+    if ('cn-' in region):
+        aws_base_url = '.console.amazonaws.cn/cloudwatch/home?region='
+
+    alarm_link = 'https://' + region + aws_base_url + region + '#s=Alarms&alarm=' + alarmName,
+
     if (message['NewStateValue'] == 'ALARM'):
         color = 'danger'
     elif (message['NewStateValue'] == 'OK'):
         color = 'good'
-
-    if ('cn-' in region):
-        aws_base_url = '.console.amazonaws.cn/cloudwatch/home?region='
     
     slack_message = {
         'channel': slack_channel,
-        'text': '*' + subject + '*',
+        'text': '[' + subject + '](', + alarm_link + ')'
         'attachments': [
         {
             'color': color,
@@ -54,11 +56,7 @@ def handle_cloudwatch(event, context):
             },
             { 'title': 'Old State', 'value': oldState, 'short': True },
             { 'title': 'Current State', 'value': newState, 'short': True },
-            {
-                'title': 'Link to Alarm',
-                'value': 'https://' + region + '.console.amazonaws.cn/cloudwatch/home?region=' + region + '#s=Alarms&alarm=' + alarmName,
-                'short': False
-            }
+            { 'title': 'Assignee', 'value': set_assignee(alarmName)}
             ],
             'ts':  timestamp
         }
@@ -74,6 +72,9 @@ def post_message(message):
         'status_code': resp.status, 
         'response': resp.data
     })
+
+def set_assignee(alarm_name):
+    return None
 
 def lambda_handler(event, context):
     print('sns received:' + json.dumps(event))
